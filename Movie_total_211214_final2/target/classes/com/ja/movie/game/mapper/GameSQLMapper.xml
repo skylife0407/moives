@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ja.movie.game.mapper.GameSQLMapper">
+
+	<select id="createGameRoundPK" resultType="int">
+		SELECT GameRound_seq.nextval FROM Dual
+	</select>
+
+	<insert id="startGame">
+		INSERT INTO GameRound VALUES(#{gameRound_no}, #{member_no}, #{batingAmount}, null, SYSDATE)
+	</insert>
+	
+	<insert id="createDefaultCardDistribute">
+		INSERT INTO GamePlaying VALUES(GamePlaying_seq.nextval, #{gameRound_no}, #{cardShape}, #{cardNumber}, #{player})
+	</insert>
+	
+	<select id="getCurrentCardInfobyGameroundNo" resultType="com.ja.movie.vo.GamePlayingVo">
+		select * from GamePlaying where gameRound_no = #{gameRound_no}
+	</select>
+	
+	<select id="getCurrentGameRound" resultType="int">
+		select gameRound_no from GamePlaying where gameRound_no = #{gameRound_no}
+	</select>
+	
+	<insert id="addPlayerCard">
+		INSERT INTO GamePlaying VALUES(GamePlaying_seq.nextval, #{gameRound_no}, #{cardShape}, #{cardNumber}, 'P')
+	</insert>
+
+	<select id="getDealerCardInfobyGameroundNo" resultType="com.ja.movie.vo.GamePlayingVo">
+		select * from GamePlaying where gameRound_no = #{gameRound_no} AND player LIKE 'D'
+	</select>
+	
+	<!-- 포인트 관련 -->
+	<select id="reulstPonit" resultType="int">
+		SELECT batingamount from gameround
+		WHERE gameround_no = #{no}
+	</select>
+	
+	<update id="battingPoint">
+		UPDATE Member 
+		SET member_point = member_point - #{batingAmount}
+		WHERE member_no = #{memberNo}
+	</update>	
+	<update id="basicWinnerPoint">
+		UPDATE Member
+		SET member_point = member_point + #{batingAmount} * 1.5
+		WHERE member_no = #{memberNo}
+	</update>
+	<update id="blackJackPoint">
+		UPDATE Member
+		SET member_point = member_point + #{batingAmount} * 3
+		WHERE member_no = #{memberNo}
+	</update>
+	<update id="drowPoint">
+		UPDATE Member
+		SET member_point = member_point + #{batingAmount}
+		WHERE member_no = #{memberNo}
+	</update>
+</mapper>

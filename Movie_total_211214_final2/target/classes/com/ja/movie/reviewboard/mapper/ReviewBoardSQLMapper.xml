@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ja.movie.reviewboard.mapper.ReviewBoardSQLMapper">
+
+	<select id="createBoardPK" resultType="int">
+		SELECT ReviewBoard_seq.nextval FROM Dual
+	</select>
+
+	<insert id="reviewWriteContent">
+		INSERT INTO ReviewBoard VALUES(
+		    #{reviewboard_no},
+		    #{member_no},
+		    1,
+		    #{reviewboard_title},
+		    #{reviewboard_content},
+		    0,
+		    SYSDATE,
+		    0,
+		    #{reviewboard_score}
+		)		
+	</insert>
+	
+	<select id="getReviewList" resultType="com.ja.movie.vo.ReviewBoardVo">
+		SELECT * FROM ReviewBoard ORDER BY Reviewboard_no DESC
+	</select>
+	
+	<select id="getReviewBoardByNo" resultType="com.ja.movie.vo.ReviewBoardVo">
+		SELECT * FROM ReviewBoard WHERE Reviewboard_no = #{no}
+	</select>
+	
+	<delete id="reviewDeleteByNo">
+		DELETE FROM ReviewBoard WHERE Reviewboard_no = #{no}
+	</delete>
+	
+	<update id="reviewUpdate">
+		UPDATE ReviewBoard 
+		SET Reviewboard_title = #{reviewboard_title},
+		Reviewboard_content = #{reviewboard_content}
+		WHERE Reviewboard_no = #{reviewboard_no}
+	</update>
+	
+	<update id="increaseReviewReadCount">
+		UPDATE ReviewBoard 
+		SET Reviewboard_readcount = Reviewboard_readcount + 1
+		WHERE Reviewboard_no = #{no}	
+	</update>
+
+<!-- 좋아요 관련 -->
+	<insert id="like">
+		INSERT INTO ReviewBoard_Like VALUES(
+		    ReviewBoard_Like_seq.nextval,
+		    #{reviewboard_no},
+		    #{member_no}
+		    
+		    
+		)
+	</insert>
+	
+	<delete id="unLike">
+		DELETE FROM ReviewBoard_Like 
+		WHERE member_no = #{member_no} AND reviewboard_no = #{reviewboard_no}
+	</delete>
+
+	<select id="myLikeCount" resultType="int">
+		SELECT COUNT(*) FROM ReviewBoard_Like 
+		WHERE member_no = #{member_no} AND reviewboard_no = #{reviewboard_no}
+	</select>
+
+	<select id="totalLikeCount" resultType="int">
+		SELECT COUNT(*) FROM ReviewBoard_Like WHERE reviewboard_no = #{reviewboardNo}
+	</select>
+	
+	<!-- 리뷰포인트 관련 -->
+	<update id="reviewUpdatePoint">
+		UPDATE Member
+		SET member_point = member_point + 100
+		WHERE Member_no = #{no}
+	</update>
+	<update id="reviewdeleteUpdatePoint">
+		UPDATE Member
+		SET member_point = member_point - 100
+		WHERE Member_no = #{no}
+	</update>
+
+	<update id="reviewUpdateReplyPoint">
+		UPDATE Member
+		SET member_point = member_point + 10
+		WHERE Member_no = #{no}
+	</update>
+	<update id="reviewdeleteUpdateReplyPoint">
+		UPDATE Member
+		SET member_point = member_point - 10
+		WHERE Member_no = #{no}
+	</update>
+
+	
+	
+<!-- 댓글 작성 -->
+	<insert id="reviewWriteReplyContent">
+		INSERT INTO ReviewBoard_Reply VALUES(
+   			ReviewBoard_Reply_seq.nextval,
+			#{reviewboard_no},
+			#{member_no},
+			1,
+			#{reviewboard_reply_content},
+			SYSDATE
+		)
+	</insert>
+	
+	<!-- 댓글 조회 -->
+	<select id="getReviewBoardReplyList" resultType="com.ja.movie.vo.ReviewBoardReplyVo">
+		SELECT * FROM ReviewBoard_Reply
+		WHERE reviewboard_no = #{reviewboard_no}	
+	</select>
+
+
+
+
+
+<!-- 리뷰게시판 댓글 관련 -->
+	<insert id="reviewReplyWriteContent">
+		INSERT INTO ReviewBoard_Reply VALUES(
+		    ReviewBoard_Reply_seq.nextval,
+		    #{reviewboard_no},
+		    #{member_no},
+		    #{icon_no},
+		    #{reviewboard_reply_content},
+		    SYSDATE
+		)		
+	</insert>
+	
+	<delete id="reviewReplyDelete">
+		DELETE FROM ReviewBoard_Reply 
+		WHERE reviewBoard_Reply_no = #{no}
+	</delete>
+	
+	<update id="reviewReplyUpdate">
+		UPDATE ReviewBoard_Reply 
+		SET reviewboard_reply_content = #{reviewboard_reply_content}
+		WHERE reviewboard_reply_no = #{reviewboard_reply_no}
+	</update>
+	
+	<select id="getReviewReplyByNo" resultType="com.ja.movie.vo.ReviewBoardReplyVo">
+		SELECT * FROM ReviewBoard_Reply 
+		WHERE reviewBoard_no = #{reviewBoard_no}
+	</select>
+
+	<!-- 이미지 관련 -->
+	<insert id="registerImage">
+		INSERT INTO ReviewBoard_Image VALUES(
+		    ReviewBoard_Image_seq.nextval,
+		    #{reviewboard_no},
+		    #{reviewboard_image_link},
+		    #{reviewboard_image_filename}
+		)		
+	</insert>
+
+	<select id="getReviewBoardImages" resultType="com.ja.movie.vo.ReviewBoardImageVo">
+		SELECT * FROM ReviewBoard_Image WHERE reviewBoard_no = #{reviewboardNo}
+	</select>
+	
+	<select id="getReviewBoardImg" resultType="com.ja.movie.vo.ReviewBoardImageVo">
+		SELECT * FROM ReviewBoard_Image WHERE reviewBoard_no = #{reviewBoard_no}
+	</select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

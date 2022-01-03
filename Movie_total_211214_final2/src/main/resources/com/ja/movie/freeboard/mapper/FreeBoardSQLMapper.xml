@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ja.movie.freeboard.mapper.FreeBoardSQLMapper">
+
+	<insert id="writeContent">
+		INSERT INTO FreeBoard VALUES(
+		    FreeBoard_seq.nextval,
+		    #{member_no},
+		    1,
+		    #{freeboard_title},
+		    #{freeboard_content},
+		    0,
+		    SYSDATE,
+		    0
+		)		
+	</insert>
+	
+	<select id="getList" resultType="com.ja.movie.vo.FreeBoardVo">
+		SELECT * FROM FreeBoard ORDER BY Freeboard_no DESC
+	</select>
+	
+	<select id="getBoardByNo" resultType="com.ja.movie.vo.FreeBoardVo">
+		SELECT * FROM FreeBoard WHERE Freeboard_no = #{no}
+	</select>
+	
+	<delete id="deleteByNo">
+		DELETE FROM FreeBoard WHERE Freeboard_no = #{no}
+	</delete>
+	
+	<update id="update">
+		UPDATE FreeBoard 
+		SET Freeboard_title = #{freeboard_title},
+		Freeboard_content = #{freeboard_content}
+		WHERE Freeboard_no = #{freeboard_no}
+	</update>
+	
+	<update id="increaseReadCount">
+		UPDATE FreeBoard 
+		SET Freeboard_readcount = Freeboard_readcount + 1
+		WHERE Freeboard_no = #{no}	
+	</update>
+	
+	<!-- 포인트 관련 -->
+	<update id="writeUpdatePoint">
+		UPDATE Member 
+		SET member_point = member_point + 10
+		WHERE Member_no = #{no}
+	</update>
+	
+	<update id="deleteUpdatePoint">
+		UPDATE Member 
+		SET member_point = member_point - 10
+		WHERE Member_no = #{no}
+	</update>
+	
+	<!-- 댓글 작성 -->
+	<insert id="writeReplyContent">
+		insert into freeboard_reply values(
+   			freeboard_reply_seq.nextval,
+			#{freeboard_no},
+			#{member_no},
+			1,
+			#{freeboard_reply_content},
+			SYSDATE
+		)
+	</insert>
+	
+	<!-- 댓글 조회 -->
+	<select id="getFreeBoardReplyList" resultType="com.ja.movie.vo.FreeBoardReplyVo">
+		select * from freeboard_reply
+		where freeboard_no = #{freeboard_no}	
+	</select>
+	
+	<!-- 자유게시판 댓글 관련 -->
+	<insert id="replyWriteContent">
+		INSERT INTO FreeBoard_Reply VALUES(
+		    FreeBoard_Reply_seq.nextval,
+		    #{freeboard_no},
+		    #{member_no},
+		    #{icon_no},
+		    #{freeboard_reply_content},
+		    SYSDATE
+		)		
+	</insert>
+	
+	<delete id="replyDelete">
+		DELETE FROM FreeBoard_Reply 
+		WHERE FreeBoard_Reply_no = #{no}
+	</delete>
+	
+	<update id="replyUpdate">
+		UPDATE FreeBoard_Reply 
+		SET freeboard_reply_content = #{freeboard_reply_content}
+		WHERE freeboard_reply_no = #{freeboard_reply_no}
+	</update>
+	
+	<select id="getReplyByNo" resultType="com.ja.movie.vo.FreeBoardReplyVo">
+		SELECT * FROM FreeBoard_Reply 
+		WHERE freeBoard_no = #{freeBoard_no}
+	</select>
+	
+</mapper>
+
+
+
+
+
+

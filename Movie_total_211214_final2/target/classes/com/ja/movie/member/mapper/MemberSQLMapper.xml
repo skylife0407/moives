@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ja.movie.member.mapper.MemberSQLMapper">
+
+	<select id="createMemberPK" resultType="int">
+		select member_seq.nextval from dual
+	</select>
+	
+	<insert id="register">
+		insert into Member values(
+		    #{member_no},
+		   	2,
+		   	#{member_id}, 
+		    #{member_pw},
+		    #{member_nick},
+		    #{member_email},
+		    #{member_birth},
+		    #{member_gender},
+		    1,
+		    100,
+		    0
+		)
+	</insert>
+	
+	<select id="getMemberByIdAndPw" resultType="com.ja.movie.vo.MemberVo">
+		select *
+		from Member
+		where member_id = #{member_id}
+		and member_pw = #{member_pw}		
+	</select>
+	
+	<select id="getCountByMemberId" resultType="int">
+		select count(*) 
+		from member
+		where member_id = #{id}		 
+	</select>
+	
+	<select id="getMemberByNo" resultType="com.ja.movie.vo.MemberVo">
+		select *
+		from Member
+		where member_no= #{no}
+	</select>
+	<select id="getMemberByActivity" resultType="string">
+		select member_activity
+		from Member
+		where member_id= #{id}
+	</select>
+	
+
+	<!-- 장르관련 -->
+	<select id="genreList" resultType="com.ja.movie.vo.GenreCategoryVo">
+		SELECT * FROM genre_category where genre_name is not null ORDER BY genre_category_no ASC
+	</select>
+	
+	<insert id="registerGenre">
+		insert into user_genre values(
+		    user_genre_seq.nextval,
+		    #{genrecategory_no},
+		    #{member_no}
+		)
+	</insert>
+	
+ 	<!-- 6개 이하 추천 -->
+   <select id="memberRecommend" resultType="com.ja.movie.vo.MovieLikeVo">
+      select * from movie_like
+      where member_no = #{member_no} and <![CDATA[rownum <= 6]]> 
+   </select>
+   
+   <!-- 6개 이하 평가 -->
+   <select id="memberEval" resultType="com.ja.movie.vo.OneLineReplyVo">
+      SELECT * FROM ONELINEREPLY
+      WHERE  MEMBER_NO = #{member_no} AND <![CDATA[rownum <= 6]]>
+   </select>
+	
+	<select id="memberByGenre" resultType="com.ja.movie.vo.GenreVo">
+		SELECT * FROM
+		    user_genre where member_no = #{no}
+	</select>
+	
+	<!-- 회원정보페이지 관련 -->
+	
+	<!-- 정보 변경 -->
+	<!-- 닉네임 변경 -->
+	<update id="memberNickChange">
+	   update member
+	   set
+	   member_nick = #{member_nick}
+	   where
+	   member_no = #{member_no}
+	</update>
+	
+	<!-- 비밀번호 변경 -->
+	<update id="memberPwChange">
+	   update member
+	   set
+	   member_pw = #{member_pw}
+	   where
+	   member_no = #{member_no}
+	</update>
+	
+	<!-- 이메일 변경 -->
+	<update id="memberEmailChange">
+		UPDATE member
+		SET 
+		MEMBER_EMAIL = #{member_email}
+		WHERE 
+		member_no = #{member_no}
+	</update>
+	
+	<!-- 선호장르 변경 -->
+	<delete id="userGenreDel">
+		DELETE FROM user_genre WHERE member_no = #{no}
+	</delete>	
+	<insert id="memberMovieChange">
+		insert into user_genre values(
+		    user_genre_seq.nextval,
+		    #{genrecategory_no},
+		    #{member_no}
+		)
+	</insert>
+
+	<!-- 포인트 관련 -->	
+	<insert id="registerAttend">
+		INSERT INTO attend VALUES(
+		    #{member_no},
+		    SYSDATE
+		)
+	</insert>	
+	<update id="loginUpdatePoint">
+		UPDATE Member 
+		SET member_point = member_point + 10
+		where member_no = #{member_no}
+	</update>
+	<update id="loginRandomUpdatePoint">
+		UPDATE Member 
+		SET member_point = member_point + 500
+		where member_no = #{member_no}
+	</update>	
+	<update id="continuityLoginPoint">
+		UPDATE Member 
+		SET member_point = member_point + 500
+		where member_no = #{member_no}
+	</update>	
+	<select id="getAttendanceCheck" resultType="int">
+		SELECT COUNT(TO_CHAR(attend_date,'yy-mm-dd')) FROM attend
+		where member_no = #{no}
+		and TO_CHAR(attend_date,'yy-mm-dd') = TO_CHAR(SYSDATE,'yy-mm-dd')
+	</select>	
+	<select id="getContinuityPoint" resultType="int">
+		SELECT COUNT(DISTINCT TO_CHAR(attend_date, 'yy-mm-dd')) FROM attend
+		where member_no = #{no}
+		and TO_CHAR(attend_date,'iw') = TO_CHAR(SYSDATE-7, 'iw')
+	</select>	
+	
+	
+	
+	<!-- 추천관련 -->
+	<select id="recommendList" resultType="com.ja.movie.vo.MovieLikeVo">
+		select * from movie_like
+	</select>
+	
+	<!-- 평가관련 -->
+	<select id="evalList" resultType="com.ja.movie.vo.OneLineReplyVo">
+		select * from OneLineReply
+	</select>
+	
+	<!-- 게시글찾기 관련 -->
+	<select id="freeBoardList" resultType="com.ja.movie.vo.FreeBoardVo">
+		select * from freeboard order by freeboard_writedate desc
+	</select>
+	
+	<!-- 리뷰게시글 찾기 -->
+	<select id="reviewBoardList" resultType="com.ja.movie.vo.ReviewBoardVo">
+		select * from ReviewBoard order by reviewboard_writedate desc
+	</select>
+	
+	<!-- 관리자 페이지 관련 -->
+	<!-- 사용자 조회 및 설정 -->
+	<select id="adminMemberList" resultType="com.ja.movie.vo.MemberVo">
+		select * from Member ORDER BY Member_no DESC
+	</select>
+	<!-- 사용자 상태설정 -->
+	<update id="adminMemberActivity">
+		update Member
+		set
+		Member_activity = #{activityNo}
+		where
+		Member_no = #{memberNo}
+	</update>
+	<update id="adminMemberAuth">
+		update Member
+		set
+		Member_auth = #{authNo}
+		where
+		Member_no = #{memberNo}
+	</update>
+	
+	<!-- 자유게시판 조회 및 설정 -->
+	<select id="adminFreeBoardList" resultType="com.ja.movie.vo.FreeBoardVo">
+		select * from FreeBoard ORDER BY FreeBoard_no DESC
+	</select>
+	<update id="adminFreeBoardPatch">
+		update FreeBoard
+		set
+		FreeBoard_activity = #{activityNo}
+		where
+		FreeBoard_no = #{boardNo}
+	</update>
+	
+	<!-- 리뷰게시판 조회 및 설정 -->
+	<select id="adminReviewBoardList" resultType="com.ja.movie.vo.ReviewBoardVo">
+		select * from ReviewBoard ORDER BY ReviewBoard_no DESC
+	</select>
+	<update id="adminReviewBoardPatch">
+		update ReviewBoard
+		set
+		ReviewBoard_activity = #{activityNo}
+		where
+		ReviewBoard_no = #{boardNo}
+	</update>
+	
+	<!-- 이벤트게시판 조회 및 설정 -->
+	<select id="adminEventBoardList" resultType="com.ja.movie.vo.EventBoardVo">
+		select * from EventBoard ORDER BY EventBoard_no DESC
+	</select>
+	<update id="adminEventBoardPatch">
+		update EventBoard
+		set
+		EventBoard_activity = #{activityNo}
+		where
+		EventBoard_no = #{boardNo}
+	</update>
+	<!-- 아이콘상점 리스트 -->
+	<select id="iconShopList" resultType="com.ja.movie.vo.IconVo">
+		select * from icon order by icon_no
+	</select>
+	<!-- 아이콘 구매 -->
+	<update id="iconBuy">
+		update member
+		set
+		Icon_no = #{iconNo},
+		member_point = member_point - #{iconPrice}
+		where
+		member_no = #{memberNo}		
+	</update>
+	<insert id="iconUploadImage">
+		INSERT INTO icon VALUES(
+		    icon_seq.nextval,
+		    #{icon_link},
+		    #{icon_price},
+		    #{icon_name}
+		)
+	</insert>
+	<update id="iconChangeImage">
+		update icon
+		set
+		icon_link = #{icon_link},
+		icon_price = #{icon_price}
+		where
+		icon_no = #{icon_no}
+	</update>
+
+</mapper>

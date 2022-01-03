@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ja.movie.onelinereply.mapper.OneLineReplySQLMapper">
+
+	<select id="getMovieVoByNo" resultType="com.ja.movie.vo.MovieVo">
+		select * FROM movie where movie_no=#{movie_no}
+	</select>
+	
+	<select id="getMoviePosterByNo" resultType="com.ja.movie.vo.PosterVo">
+		select * FROM Poster where movie_no=#{movie_no}
+	</select>
+	
+	<select id="getActorNoBymovieNo" resultType="int">
+		select actor_no from movie_actor where movie_no=#{movie_no}
+	</select>
+	
+	<select id="getActorByActorNo" resultType="String">
+		select actor_actorname from actor where actor_no=#{actorNo}
+	</select>
+	
+	<insert id="writeOnelineReply">
+		INSERT INTO OneLineReply values(
+ 			oneLineReply_seq.nextval,
+ 			#{movie_no}, 
+ 			#{member_no},
+ 			1, 
+ 			#{oneLineReply_content}, 
+ 			SYSDATE, 
+ 			#{oneLineReply_star}
+		)
+	</insert>
+	
+	<!-- 댓글작성 포인트 -->
+	<update id="UpdateReplyPoint">
+		UPDATE Member 
+		SET member_point = member_point + 10
+		WHERE Member_no = #{no}
+	</update>	
+	<update id="deleteUpdateReplyPoint">
+		UPDATE Member 
+		SET member_point = member_point - 10
+		WHERE Member_no = #{no}
+	</update>
+	
+	<select id="getOneLineReplyByMovieNo" resultType="com.ja.movie.vo.OneLineReplyVo">
+		select * from OneLineReply where movie_no=#{movie_no} order by onelinereply_no desc
+	</select>
+	
+	<select id="checkOneLineReplyByMemberNo" resultType="int">
+		select count(*) from OneLineReply where member_no=#{member_no}
+	</select>
+	
+	<select id="getMyOneLineReplyByMemberNoAndMovieNo" resultType="com.ja.movie.vo.OneLineReplyVo">
+		select * from OneLineReply where member_no=#{member_no} AND movie_no=#{movie_no}
+	</select>
+	
+	<delete id="deleteOneLineReplyByMovieNoAndMemberNo">
+		Delete OneLineReply where oneLineReply_no=#{oneLineReply_no}
+	</delete>
+	
+	<update id="updateOneLineReplyByMovieNoAndMemberNo">
+		UPDATE OneLineReply SET oneLineReply_content=#{oneLineReply_content}, oneLineReply_star=#{oneLineReply_star} WHERE oneLineReply_no=#{oneLineReply_no}
+	</update>
+	
+	<select id="getMovieStarAvg" resultType="double">
+		select AVG(oneLineReply_star) from OneLineReply where movie_no=#{movie_no}
+	</select>
+	
+	<select id="getCountMovieLikeByMovieNo" resultType="int">
+		select count(*) from Movie_Like where movie_no=#{movie_no}
+	</select>
+	
+	<insert id="likeThisMovie">
+		INSERT INTO Movie_Like VALUES(Movie_Like_seq.nextval, #{movie_no}, #{member_no})
+	</insert>
+	
+	<select id="isLikeThisMovie" resultType="int">
+		select count(*) from Movie_Like where movie_no=#{movie_no} AND member_no=#{member_no}
+	</select>
+	
+	<delete id="deleteMovieLikeByMovieNoAndMemberNo">
+		delete Movie_Like where movie_no=#{movie_no} AND member_no=#{member_no}
+	</delete>
+	
+	<select id="getCountOneLineReplyByMovieNo" resultType="int">
+		select count(*) from OneLineReply where movie_no=#{movie_no}
+	</select>
+	
+	<select id="getMovieStarAVGGroupByGenderByMovieNo" resultType="map">
+		select member_gender, TRUNC(avg(onelinereply_star) ,2) as movieGenderStarAVG from OneLineReply o, member m where o.member_no=m.member_no AND movie_no=#{movie_no} GROUP BY member_gender
+	</select>
+	
+	<select id="getMovieCountGenderByMovieNo" resultType="map">
+		<!-- select member_gender ,count(member_gender) as countGender from OneLineReply o, member m where o.member_no=m.member_no AND movie_no=#{movie_no} GROUP BY member_gender -->
+		select member_gender , count(*) as countGender from member m, movie_like l where m.member_no = l.member_no AND movie_no = #{movie_no} group by member_gender
+		
+	</select>
+	
+	<select id="getRandomGenreCategoryNoByMoiveNo" resultType="int">
+		select * from(
+		    select genre_category_no from movie_genre g, movie m where m.movie_no = g.movie_no AND m.movie_no=#{movie_no}
+		    order by DBMS_RANDOM.RANDOM
+		) <![CDATA[where rownum < 2]]> 
+	</select>
+	
+	<select id="getMovieListByGenreCategoryNo" resultType="com.ja.movie.vo.MovieVo">
+		select * from(
+		    select m.* from movie_genre g, movie m where m.movie_no = g.movie_no AND genre_category_no=#{genre_category_no} order by DBMS_RANDOM.RANDOM
+		) <![CDATA[where rownum < 5]]>
+	</select>
+	
+	<select id="getAgeGroupsCountByMovieNo" resultType="map">
+		<![CDATA[
+		SELECT 
+		  (
+		    case when age <= 19 then '10대'
+             when age > 19 and age <= 29 then '20대'
+             when age > 29 and age <= 39 then '30대'
+             when age > 39 and age <= 49 then '40대'
+             when age > 49 and age <= 59 then '50대'
+             else '60대'
+         	end
+		  ) bucket, 
+		  count(*) as cnt
+		FROM 
+		  (SELECT 
+		  	trunc(months_between(sysdate, m.member_birth)/ 12) age 
+		    FROM(
+		        select member_birth from(
+		            select m.* from onelinereply o, member m 
+		            where 
+		              o.member_no = m.member_no AND movie_no = #{movie_no}
+		        ) t1
+		    ) m 
+		)
+		GROUP BY (
+		    case when age <= 19 then '10대'
+             when age > 19 and age <= 29 then '20대'
+             when age > 29 and age <= 39 then '30대'
+             when age > 39 and age <= 49 then '40대'
+             when age > 49 and age <= 59 then '50대'
+             else '60대'
+         	end
+		) order by bucket
+		]]>
+	</select>
+
+</mapper>

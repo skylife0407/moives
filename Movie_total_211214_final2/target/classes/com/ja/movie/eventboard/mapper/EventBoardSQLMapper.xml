@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ja.movie.eventboard.mapper.EventBoardSQLMapper">
+
+	<!-- 이벤트 페이지 -->
+	<select id="getEventList" resultType="com.ja.movie.vo.EventBoardVo">
+		SELECT * FROM EventBoard ORDER BY EventBoard_no DESC
+	</select>
+	
+	<delete id="eventDelete">
+		DELETE FROM EventBoard WHERE eventboard_no = #{no}
+	</delete>
+
+	<update id="eventUpdate">
+		UPDATE EventBoard
+		SET eventboard_title = #{eventboard_title},
+		eventboard_startdate = #{eventboard_startdate},
+		eventboard_enddate = #{eventboard_enddate},
+		eventboard_content = #{eventboard_content}
+		WHERE eventboard_no = #{eventboard_no}
+	</update>
+	
+	<update id="evnetUpdateImage">
+		UPDATE EVENTBOARD_IMAGE
+		SET eventboard_image_link = #{eventboard_image_link},
+		eventboard_image_filename = #{eventboard_image_filename}
+		WHERE eventboard_no = #{eventboard_no}
+	</update>
+	
+	
+
+	
+	
+
+
+
+	<!-- 등록 페이지 -->
+	<select id="createEventBoardPK" resultType="int">
+		SELECT EventBoard_seq.nextval FROM Dual
+	</select>
+	
+	
+	<insert id="eventRegister">
+		INSERT INTO EventBoard VALUES(
+		#{eventboard_no},
+		#{member_no},
+		#{eventboard_title},
+		#{eventboard_content},
+		#{eventboard_startdate},
+		#{eventboard_enddate},
+		SYSDATE,
+		0
+	)
+	</insert>
+	
+	
+	
+	<!-- 상세 페이지 -->
+	<select id="getEventByNo" resultType="com.ja.movie.vo.EventBoardVo">
+		SELECT * from EventBoard WHERE Eventboard_no = #{no}
+	</select>
+	
+	<insert id="eventReplyContent">
+		INSERT INTO EventBoard_Reply VALUES(
+			EventBoard_Reply_seq.nextval,
+			#{eventboard_no},
+			#{member_no},
+			#{eventboard_reply_content},
+			SYSDATE
+		)
+	</insert>
+	
+	<select id="getEventBoardReplyList" resultType="com.ja.movie.vo.EventBoardReplyVo">
+		SELECT * FROM eventboard_reply
+		WHERE eventboard_no = #{eventboard_no}
+	</select>
+	
+	<delete id="eventReplyDelete">
+		DELETE FROM EventBoard_Reply
+		WHERE EventBoard_Reply_no = #{no}
+	</delete>
+	
+	<update id="eventReplyUpdate">
+		UPDATE EventBoard_Reply
+		SET eventboard_reply_content = #{eventboard_reply_content}
+		WHERE eventboard_reply_no = #{eventboard_reply_no}
+	</update>
+	
+	<select id="getEventReplyByNo" resultType="com.ja.movie.vo.EventBoardReplyVo">
+		SELECT * FROM EventBoard_Reply
+		WHERE eventBoard_reply_no = #{eventBoard_reply_no}
+	</select>
+	
+	
+	<!--  이미지 관련  -->
+	<insert id="eventRegisterImage">
+		INSERT INTO EVENTBOARD_IMAGE VALUES(
+		EventBoard_Image_seq.nextval,
+		#{eventboard_no},
+		#{eventboard_image_link},
+		#{eventboard_image_filename}
+	)
+	</insert>
+	
+	<select id="getEventImagesByBoardNo" resultType="com.ja.movie.vo.EventBoardImageVo">
+		SELECT * FROM EventBoard_Image WHERE eventBoard_no = #{eventboardNo}
+	</select>
+	
+	<select id="getEventImageList" resultType="com.ja.movie.vo.EventBoardImageVo">
+		SELECT * FROM EventBoard_Image WHERE eventBoard_no = #{image_no}
+	</select>
+	
+	
+	
+	<!-- 좋아요 관련 -->
+	<insert id="like">
+		INSERT INTO EventBoard_Like VALUES( 
+			EventBoard_Like_seq.nextval,
+			#{eventboard_no},
+			#{member_no}
+		)
+	</insert>
+	
+	<delete id="unLike">
+		DELETE FROM EventBoard_Like
+		WHERE member_no = #{member_no} AND eventboard_no = #{eventboard_no}
+	</delete>
+	
+	
+	<select id="myLikeCount"  resultType="int">
+		SELECT COUNT(*) FROM EventBoard_Like
+		WHERE member_no = #{member_no} AND eventboard_no = #{eventboard_no}
+	</select>
+	
+	
+	<select id="totalLikeCount" resultType="int">
+		SELECT COUNT(*) FROM EventBoard_Like WHERE eventboard_no = #{eventboardNo}
+	</select>
+	
+	 <!-- 포인트 관련 -->
+   <update id="writeUpdatePoint">
+      UPDATE Member 
+      SET member_point = member_point + 10
+      WHERE Member_no = #{no}
+   </update>   
+   <update id="deleteUpdatePoint">
+      UPDATE Member 
+      SET member_point = member_point - 10
+      WHERE Member_no = #{no}
+   </update>
+
+
+
+</mapper>
